@@ -2,6 +2,7 @@
 #define DOUBLY_LINKED_LIST_H
 
 #include <iostream>
+#include <iterator>
 
 template <typename T>
 struct node {
@@ -19,6 +20,29 @@ class doubly_linked_list {
         void add(T);
         void remove(T);
         void print();
+
+        struct Iterator {
+            public:
+                using iterator_category = std::bidirectional_iterator_tag;
+                using difference_type   = int;
+                using value_type        = T;
+                using pointer           = node<T>*;
+                using reference         = T&;
+                Iterator(pointer ptr): _ptr(ptr) {}
+                reference operator*() const {return _ptr->data;}
+                pointer operator->() {return _ptr;}
+                Iterator& operator++() {_ptr = _ptr->next; return *this;}
+                Iterator& operator--() {_ptr = _ptr->prev; return *this;}
+                Iterator operator++(int) {Iterator tmp = *this; ++(*this); return tmp;}
+                Iterator operator--(int) {Iterator tmp = *this; --(*this); return tmp;}
+                friend bool operator==(const Iterator& a, const Iterator& b) {return a._ptr == b._ptr;};
+                friend bool operator!=(const Iterator& a, const Iterator& b) {return a._ptr != b._ptr;};
+            private:
+                pointer _ptr;
+        };
+        
+        Iterator begin() {return Iterator(dummy_node.next);}
+        Iterator end() {return Iterator(&dummy_node);}
 };
 
 template <typename T>
