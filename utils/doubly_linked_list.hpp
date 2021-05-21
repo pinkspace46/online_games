@@ -1,3 +1,6 @@
+#ifndef DOUBLY_LINKED_LIST_H
+#define DOUBLY_LINKED_LIST_H
+
 #include <iostream>
 
 template <typename T>
@@ -68,3 +71,5 @@ void doubly_linked_list<T>::print()
     }
     std::cout << std::endl;
 }
+
+#endif // DOUBLY_LINKED_LIST_H
