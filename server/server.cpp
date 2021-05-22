@@ -115,8 +115,8 @@ int main(int argc, char *argv[])
                     getpeername(i, (struct sockaddr *)&address, (socklen_t*)&addrlen);
                     std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << " disconencted" << std::endl; 
                     close(i);
-                    connection_fds.remove(i);
                     --it;
+                    connection_fds.remove(i);
                 }
                 // echo back
                 else {

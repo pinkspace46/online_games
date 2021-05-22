@@ -75,6 +75,8 @@ void doubly_linked_list<T>::remove(T data)
         if (ptr->data == data) {
             ptr->prev->next = ptr->next;
             ptr->next->prev = ptr->prev;
+            ptr->next = NULL;
+            ptr->prev = NULL;
             delete ptr;
             return;
         }
