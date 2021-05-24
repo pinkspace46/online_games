@@ -4,16 +4,16 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <iostream>
+#include <assert.h>
 
 #include "../utils/doubly_linked_list.hpp"
+#include "lobby_manager.hpp"
 
 #define PORT 12345
 #define MAX_PENDING_CONNS 50
-#define BUF_SIZE 1024
 
 int main(int argc, char *argv[])
 {
@@ -29,11 +29,12 @@ int main(int argc, char *argv[])
 
     char const *welcome_msg = "Hello there!\r\n";
     int valread;
-    char buffer[BUF_SIZE] = {'\0'};
 
     fd_set fd_bitmap;
 
     doubly_linked_list<int> connection_fds;
+
+    lobby_manager lm;
 
     // create main socket
     if ((main_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
@@ -110,21 +111,16 @@ int main(int argc, char *argv[])
         for (auto it = connection_fds.begin(), end = connection_fds.end(); it != end; ++it) {
             const auto i = *it;
             if (FD_ISSET(i, &fd_bitmap)) {
-                // check if it was for closing, also read the message
-                if ((valread = read(i, buffer, BUF_SIZE)) == 0) {
+                // returns the fd itself if it is closing
+                int fd_to_close = lm.notify(i);
+                assert(fd_to_close == i || fd_to_close == -1);
+                // closing
+                if (fd_to_close == i) {
                     getpeername(i, (struct sockaddr *)&address, (socklen_t*)&addrlen);
-                    std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << " disconencted" << std::endl; 
+                    std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << " disconnected" << std::endl; 
                     close(i);
                     --it;
                     connection_fds.remove(i);
-                }
-                // echo back
-                else {
-                    getpeername(i, (struct sockaddr *)&address, (socklen_t*)&addrlen);
-                    buffer[valread] = '\0';
-                    std::cout << "Received \"\n" << buffer << "\" from " << inet_ntoa(address.sin_addr) << ":" 
-                              << ntohs(address.sin_port) << std::endl;
-                    send(i, buffer, strlen(buffer), 0);
                 }
             }
         }
