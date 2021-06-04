@@ -1,6 +1,9 @@
 #ifndef LOBBY_MANAGER_H
 #define LOBBY_MANAGER_H
 
+#include <map>
+#include "../games/game.hpp"
+
 #define BUF_SIZE 1024
 #define MAX_TABLES 20
 #define MAX_PLAYERS 40
@@ -8,18 +11,18 @@
 class lobby_manager {
     private:
         char buffer[BUF_SIZE];
-        char* player_names[MAX_PLAYERS];
-        bool table_state[MAX_TABLES];
+        std::map<int, game*> fd_game_mapping;
+        std::map<int, char*> fd_name_mapping;
         int number_of_players, number_of_tables;
-        int *r_signal, *s_signal; // receive signal, send signal
-        
+        int recv_signal, send_signal; // receive signal, send signal
+
+        bool repeat_name(char*); //check whether player name is repeated
+        void create_game(int fd, int game_type);
+        void close_game(game* game_ptr);
         
     public:
         lobby_manager();
         int notify(int fd); // read signal from client and process
-        bool repeat_name(); //check whether player name is repeated
-        void create_game(int gamenum);
-        void close_game(int gamenum);
 };
 
 #endif // LOBBY_MANAGER_H 
