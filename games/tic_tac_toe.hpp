@@ -11,7 +11,7 @@ class tic_tac_toe: public game {
         
     public:
         tic_tac_toe();
-        void set_symbol();
+        void game_initialize();
         void play_move(int row, int column, char symbol);
         int check_game();
         void print_board();

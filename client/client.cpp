@@ -11,19 +11,21 @@
 #define BUFFSIZE 1024
 #define PORT 12345
 #define MAX_NAME_LENGTH 20
+#define MAX_GAME_TYPE 2
 
-int main(int argc, char *argv[]) {
-
-    int client_socket_fd, con;
+int main(int argc, char *argv[])
+{
+    int client_socket_fd;
     struct sockaddr_in address;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = inet_addr("127.0.0.1");
     address.sin_port = htons(PORT);
     
     int addrlen = sizeof(address);
     
-    char buffer[BUFFSIZE], message[BUFFSIZE], player_name[MAX_NAME_LENGTH];
-    int *r_signal, *s_signal, *gamenum;
+    char buffer[BUFFSIZE], player_name[MAX_NAME_LENGTH];
+    int recv_signal, send_signal, game_type;
+    int const welcome_msg_num = 777;
     
     //create socket
 	if ((client_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -32,7 +34,7 @@ int main(int argc, char *argv[]) {
 	}
     
     //connect with server
-    if ((con = connect(client_socket_fd, (struct sockaddr *)&address, addrlen)) == -1) {
+    if (connect(client_socket_fd, (struct sockaddr *)&address, addrlen) == -1) {
         perror("Connection failed\n");
         exit(EXIT_FAILURE);
     }
@@ -40,9 +42,14 @@ int main(int argc, char *argv[]) {
         std::cout << "Connected to server.\n";
     }
     
-    //receive welcome message
-    recv(client_socket_fd, buffer, sizeof(buffer), 0);
-    std::cout << buffer;
+    //receive welcome message number
+    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+    if (recv_signal != welcome_msg_num) {
+        perror("Received welcome message incorrect\n");
+    }
+    else {
+        std::cout << "Hello there!\n";
+    }
     
     //enter player name
     while (true) {
@@ -53,23 +60,22 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
-        *s_signal = 1; // sending player name
-        send(client_socket_fd, s_signal, sizeof(s_signal), 0);
+        send_signal = 1; // send player name signal
+        send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
         
-        if (send(client_socket_fd, player_name, sizeof(player_name), 0) != sizeof(player_name)) {
+        if (send(client_socket_fd, player_name, strlen(player_name), 0) != strlen(player_name)) {
             perror("Player name not sent.\n");
         }
         else {
             std::cout << "Player name sent.\n";
         }
 
-        recv(client_socket_fd, r_signal, sizeof(r_signal), 0);
+        recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0); //receive signal of whether name repeated
         
-        if (*r_signal == 0) {
+        if (recv_signal == 0) {
             std::cout << "Player name has already been used.\n";
-            continue;
         }
-        else if (*r_signal == 1) {
+        else if (recv_signal == 1) {
             std::cout << "Welcome " << player_name << "!\n";
             break;
         }
@@ -78,25 +84,35 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    //start a game
-    
-    std::cout << "Choose a game.\n" << "1. Tic tac toe\n" << "2. Gobang\n";
-    std::cin << gamenum; // type of game
-    //to do: validation of gamenum
-    *s_signal = 2;
-    send(client_socket_fd, s_signal, sizeof(s_signal), 0); // send game request signal to server
-    send(client_socket_fd, gamenum, sizeof(gamenum), 0); // send game number to server
-    std::cout << "Waiting for other players...\n";
-    
-    // enter game
-    recv(client_socket_fd, r_signal, sizeof(r_signal), 0); //receive signal of gametype
-    if (*r_signal == 2) { //tic_tac_toe
-        recv(client_socket_fd, buffer, strlen(buffer), 0); // receive from server O or X
-        std::cout << "You are " << buffer << ".\n";
-        while (*r_signal != 3) {// your turn to play move
-              
+    //choose a game
+    std::cout << "Choose a game.(Enter game number)\n" << "1. Tic tac toe\n" << "2. Gobang\n";
+    while (true) {
+        std::cin >> game_type; // type of game
+        if (game_type > 0 && game_type < MAX_GAME_TYPE + 1) {
+            break;
+        }
+        else {
+            std::cout << "Invalid game number. Try again!\n";
         }
     }
+    
+    //send game request to server
+    send_signal = 2; //send game request signal
+    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+    send(client_socket_fd, &game_type, sizeof(game_type), 0); // send game number to server
+    std::cout << "Waiting for other players...\n";
+    
+    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+    if (recv_signal == 2) {
+        system("clear");
+        std::cout << "Game starts!\n";
+    }
+    else {
+        perror("incorrect signal\n");
+    }
+    
+    //enter game
+    
     
     close(client_socket_fd);
 }

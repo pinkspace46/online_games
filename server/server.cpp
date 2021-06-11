@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     address.sin_port = htons(PORT);
     int addrlen = sizeof(address);
 
-    char const *welcome_msg = "Hello there!\r\n";
+    int const welcome_msg_num = 777;
     int valread;
 
     fd_set fd_bitmap;
@@ -96,11 +96,11 @@ int main(int argc, char *argv[])
             std::cout << "New connection, socket fd: " << new_client_socket_fd << ", ip: " << inet_ntoa(address.sin_addr) 
                       << ", port: " << ntohs(address.sin_port) << std::endl;
 
-            // send welcome message
-            if (send(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0) != strlen(welcome_msg)) {
+            // send welcome message number 777
+            if (send(new_client_socket_fd, &welcome_msg_num, sizeof(welcome_msg_num), 0) != sizeof(welcome_msg_num)) {
                 perror("send");
             }
-            std::cout << "Welcome message sent" << std::endl;
+            std::cout << "Welcome message number sent" << std::endl;
             
             // add new fd to fd list
             connection_fds.add(new_client_socket_fd);
