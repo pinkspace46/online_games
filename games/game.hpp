@@ -1,17 +1,19 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define MAX_PLAYERS 10
-
 class game {
     private:
-        bool state; //in game or not
-        int tablenum;
+        bool state; // in game or not
+        int* player_fd;
+        int current_players;
+        int game_players; // amount of player to start game
 
     public:
-        int player_fd[MAX_PLAYERS]; // should be private, temporarily set to public
-        game();
-        void add_player(int fd, int player_order);
+        game(int player_count);
+        void add_player(int fd);
+        int get_current_player_count();
+        const int* get_player_fd() const;
+        bool is_full();
 };
 
 #endif // GAME_H

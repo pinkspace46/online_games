@@ -1,13 +1,30 @@
 #include "game.hpp"
 
-game::game()
+game::game(int player_count)
 {
+    player_fd = new int[player_count];
     state = false;
-    tablenum = 0;
+    game_players = player_count;
+    current_players = 0;
 }
 
-void game::add_player(int fd, int player_order)
+void game::add_player(int fd)
 {
-    player_order -= 1; // make player_order start from 0
-    player_fd[player_order] = fd;
+    player_fd[current_players] = fd;
+    current_players++;
+}
+
+int game::get_current_player_count()
+{
+    return current_players;
+}
+
+const int* game::get_player_fd() const
+{
+    return player_fd;
+}
+
+bool game::is_full() 
+{
+    return game_players == current_players;
 }

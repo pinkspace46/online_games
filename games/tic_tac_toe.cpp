@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-tic_tac_toe::tic_tac_toe()
+tic_tac_toe::tic_tac_toe() : game(2)
 {
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {

@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
     address.sin_port = htons(PORT);
     int addrlen = sizeof(address);
 
-    int const welcome_msg_num = 777;
     int valread;
+    char const *welcome_msg = "Hello there!\r\n";
 
     fd_set fd_bitmap;
 
@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
             std::cout << "New connection, socket fd: " << new_client_socket_fd << ", ip: " << inet_ntoa(address.sin_addr) 
                       << ", port: " << ntohs(address.sin_port) << std::endl;
 
-            char const *welcome_msg = "Hello there!\r\n";
             if (send(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0) != strlen(welcome_msg)) {
                 perror("send");
             }
