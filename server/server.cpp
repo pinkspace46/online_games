@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
             std::cout << "New connection, socket fd: " << new_client_socket_fd << ", ip: " << inet_ntoa(address.sin_addr) 
                       << ", port: " << ntohs(address.sin_port) << std::endl;
 
-            // send welcome message number 777
-            if (send(new_client_socket_fd, &welcome_msg_num, sizeof(welcome_msg_num), 0) != sizeof(welcome_msg_num)) {
+            char const *welcome_msg = "Hello there!\r\n";
+            if (send(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0) != strlen(welcome_msg)) {
                 perror("send");
             }
             std::cout << "Welcome message number sent" << std::endl;

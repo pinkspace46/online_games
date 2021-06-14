@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define BUFFSIZE 1024
+#define BUF_SIZE 1024
 #define PORT 12345
 #define MAX_NAME_LENGTH 20
 #define MAX_GAME_TYPE 2
@@ -23,32 +23,31 @@ int main(int argc, char *argv[])
     
     int addrlen = sizeof(address);
     
-    char buffer[BUFFSIZE], player_name[MAX_NAME_LENGTH];
+    char buffer[BUF_SIZE], player_name[MAX_NAME_LENGTH];
     int recv_signal, send_signal, game_type;
     int const welcome_msg_num = 777;
     
-    //create socket
+    // create socket
 	if ((client_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("Create socket failed.\n");
+		perror("socket");
         exit(EXIT_FAILURE);
 	}
     
-    //connect with server
+    // connect with server
     if (connect(client_socket_fd, (struct sockaddr *)&address, addrlen) == -1) {
-        perror("Connection failed\n");
+        perror("connect");
         exit(EXIT_FAILURE);
     }
     else {
         std::cout << "Connected to server.\n";
     }
     
-    //receive welcome message number
-    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
-    if (recv_signal != welcome_msg_num) {
-        perror("Received welcome message incorrect\n");
-    }
-    else {
-        std::cout << "Hello there!\n";
+    int valread;
+    // receive welcome message
+    valread = recv(client_socket_fd, &buffer, BUF_SIZE, 0);
+    buffer[valread] = '\0';
+    for (int i = 0; i < valread; i++) {
+        std::cout << buffer[i];
     }
     
     //enter player name
