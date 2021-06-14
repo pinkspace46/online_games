@@ -25,53 +25,60 @@ lobby_manager::lobby_manager()
 
 int lobby_manager::notify(int fd)
 {
+    int valread;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     
-    recv(fd, &recv_signal, sizeof(recv_signal), 0); //receive signal from client
+    valread = recv(fd, &recv_signal, sizeof(recv_signal), 0); // receive signal from client
+    // read nothing means the other end had closed
+    if (valread == 0) {
+        return fd;
+    }
     
     getpeername(fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
     
     std::cout << "Received signal " << recv_signal << " from " << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << std::endl;
     
     switch (recv_signal) {
-        case 0: //closing
-            return fd;
+        case 0: // reserved
+            return 0;
         case 1: // receive player name signal
-            int valread;
             valread = recv(fd, buffer, BUF_SIZE, 0); // receive player name
             buffer[valread] = '\0';
             std::cout << "Received player name: " << buffer << std::endl;
             if (repeat_name(buffer)) {
                 send_signal = 0; // repeated name signal (fail)
-                send(fd, &send_signal, sizeof(send_signal), 0);
+                if (send(fd, &send_signal, sizeof(send_signal), 0) != sizeof(send_signal)) {
+                    perror("send");
+                }
             }
             else {
                 fd_name_mapping[fd] = buffer;
-                number_of_players += 1;
                 send_signal = 1; // no repeated name signal (success)
-                send(fd, &send_signal, sizeof(send_signal), 0);
+                if (send(fd, &send_signal, sizeof(send_signal), 0) != sizeof(send_signal)) {
+                    perror("send");
+                }
             }
             break;
         case 2: //receive game request signal
             int game_type;
             bool ready;
-            recv(fd, &game_type, sizeof(game_type), 0); //receive game_type
+            valread = recv(fd, &game_type, sizeof(game_type), 0); // receive game_type
             game_type -= 1; // make game_type start from 0
             ready = join_game(fd, game_type);
             if (ready) {
-                send_signal = 2; //game start signal
-                for (int i = 0; i < 2; ++i) { //the '2' needs to be modified if more than 2 player games
+                send_signal = 2; // game start signal
+                for (int i = 0; i < 2; ++i) { // the '2' needs to be modified if more than 2 player games
                     send((fd_game_mapping[fd]->player_fd)[i], &send_signal, sizeof(send_signal), 0);
                 }
             }
             break;
-        case 3: //receive game move signal
+        case 3: // receive game move signal
             break;
         default:
             break;
     }
-    return (-1);
+    return -1;
 }
 
 bool lobby_manager::repeat_name(char* name)
