@@ -3,7 +3,6 @@
 game::game(int player_count)
 {
     player_fd = new int[player_count];
-    state = false;
     game_players = player_count;
     current_players = 0;
 }

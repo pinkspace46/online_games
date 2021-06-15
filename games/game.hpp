@@ -3,7 +3,6 @@
 
 class game {
     private:
-        bool state; // in game or not
         int* player_fd;
         int current_players;
         int game_players; // amount of player to start game
