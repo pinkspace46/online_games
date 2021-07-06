@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             if (send(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0) != strlen(welcome_msg)) {
                 perror("send");
             }
-            std::cout << "Welcome message number sent" << std::endl;
+            std::cout << "Welcome message sent" << std::endl;
             
             // add new fd to fd list
             connection_fds.add(new_client_socket_fd);

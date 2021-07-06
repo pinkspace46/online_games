@@ -22,8 +22,8 @@ class lobby_manager {
         bool repeat_name(char*); //check whether player name is repeated
         bool join_game(int fd, int game_type);
         game* create_game(int fd, int game_type);
+        void send_next_turn(int fd);
         void terminate_game(game* game_ptr);
-        
     public:
         lobby_manager();
         int notify(int fd); // read signal from client and process

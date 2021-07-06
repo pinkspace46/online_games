@@ -78,12 +78,24 @@ int lobby_manager::notify(int fd)
                 for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
                     send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
                 }
+                send_next_turn(fd);
             }
             break;
-
+            
         case 3: // receive game move signal
+            char* message;
+            message = new char[1000];
+            recv(fd, message, 1000, 0);
+            message = (fd_player_mapping[fd])->game_ptr->process_move(message);
+            send_signal = 5; //game message signal
+            for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
+                send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
+                send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], message, strlen(message), 0);
+            }
+            delete[] message;
+            send_next_turn(fd);
             break;
-
+            
         default:
             break;
     }
@@ -138,6 +150,19 @@ game* lobby_manager::create_game(int fd, int game_type)
     }
     else {
         return NULL;
+    }
+}
+
+void lobby_manager::send_next_turn(int fd)
+{
+    for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
+        if (i == (fd_player_mapping[fd])->game_ptr->get_active_player()) {
+            send_signal = 3; //send signal to active player
+        }
+        else {
+            send_signal = 4; //send signal to non-active players
+        }
+        send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
     }
 }
 

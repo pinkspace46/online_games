@@ -7,14 +7,14 @@
 
 class tic_tac_toe: public game {
     private:
-        char board[3][3];
+        char board[19];
         
     public:
         tic_tac_toe();
         void game_initialize();
-        void play_move(int row, int column, char symbol);
+        char* process_move(char* message);
         int check_game();
-        void print_board();
+        char* get_board();
 };
 
 #endif // TIC_TAC_TOE_H

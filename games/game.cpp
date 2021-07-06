@@ -5,6 +5,7 @@ game::game(int player_count)
     player_fd = new int[player_count];
     game_players = player_count;
     current_players = 0;
+    active_player = 0;
 }
 
 void game::add_player(int fd)
@@ -26,4 +27,9 @@ const int* game::get_player_fd() const
 bool game::is_full() 
 {
     return game_players == current_players;
+}
+
+int game::get_active_player()
+{
+    return active_player;
 }

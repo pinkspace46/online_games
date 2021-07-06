@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
     
     char buffer[BUF_SIZE], player_name[MAX_NAME_LENGTH];
     int recv_signal, send_signal, game_type;
-    int const welcome_msg_num = 777;
     
     // create socket
 	if ((client_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -111,7 +110,31 @@ int main(int argc, char *argv[])
     }
     
     //enter game
-    
+    if (game_type == 1) { //tic_tac_toe
+        while (true) {
+            recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+            if (recv_signal == 3) { //your turn
+                std::cout << "Your turn!\n";
+                char* message;
+                message = new char[3];
+                std::cin >> message;
+                send_signal = 3; //send game move signal
+                send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+                send(client_socket_fd, message, strlen(message), 0);
+                delete[] message;
+            }
+            else if (recv_signal == 4) { // opponent's turn
+                std::cout << "Opponent\'s turn!\n";
+            }
+            else if (recv_signal == 5) { //receive message about game
+                valread = recv(client_socket_fd, buffer, BUF_SIZE, 0);
+                buffer[valread] = '\0';
+                for (int i = 0; i < valread; i++) {
+                    std::cout << buffer[i];
+                }
+            }
+        }
+    }
     
     close(client_socket_fd);
 }
