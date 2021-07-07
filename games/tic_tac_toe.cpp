@@ -17,11 +17,6 @@ tic_tac_toe::tic_tac_toe() : game(2)
     board[18] = '\0';
 }
 
-void tic_tac_toe::game_initialize()
-{
-    
-}
-
 char* tic_tac_toe::process_move(char* message)
 {
     int r = message[0] - '0';

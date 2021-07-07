@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
         send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
         
         if (send(client_socket_fd, player_name, strlen(player_name), 0) != strlen(player_name)) {
-            perror("Player name not sent.\n");
+            perror("send player name");
         }
         else {
             std::cout << "Player name sent.\n";
