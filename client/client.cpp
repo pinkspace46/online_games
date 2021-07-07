@@ -8,10 +8,47 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "../games/game_types.hpp"
+
 #define BUF_SIZE 1024
 #define PORT 12345
 #define MAX_NAME_LENGTH 20
 #define MAX_GAME_TYPE 2
+
+void get_player_name(char*, int);
+void show_name_used();
+void show_welcome_player(char*);
+int get_game_type();
+void show_waiting();
+void show_game_start();
+
+int send_name(int client_socket_fd, char* buf)
+{
+    int send_signal, recv_signal;
+    send_signal = 1; // send player name signal
+    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+    
+    if (send(client_socket_fd, buf, strlen(buf), 0) != strlen(buf)) {
+        perror("send player name");
+        exit(EXIT_FAILURE);
+    }
+    std::cerr << "Player name sent.\n";
+
+    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0); //receive signal of whether name repeated
+    
+    if (recv_signal == 0) {
+        show_name_used();
+        return 0;
+    }
+    else if (recv_signal == 1) {
+        show_welcome_player(buf);
+        return 1;
+    }
+    else {
+        std::cerr << "Incorrect signal\n";
+        exit(EXIT_FAILURE);
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -49,92 +86,58 @@ int main(int argc, char *argv[])
         std::cout << buffer[i];
     }
     
-    //enter player name
+    // enter player name
     while (true) {
-        std::cout << "Enter player name. (Less than 20 characters)\n";
-        std::cin >> player_name;
-        if (strlen(player_name) > MAX_NAME_LENGTH) {
-            std::cout << "Player name should be less than 20 characters.\n";
-            continue;
-        }
-        
-        send_signal = 1; // send player name signal
-        send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
-        
-        if (send(client_socket_fd, player_name, strlen(player_name), 0) != strlen(player_name)) {
-            perror("send player name");
-        }
-        else {
-            std::cout << "Player name sent.\n";
-        }
-
-        recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0); //receive signal of whether name repeated
-        
-        if (recv_signal == 0) {
-            std::cout << "Player name has already been used.\n";
-        }
-        else if (recv_signal == 1) {
-            std::cout << "Welcome " << player_name << "!\n";
+        get_player_name(player_name, MAX_NAME_LENGTH);
+        if (send_name(client_socket_fd, player_name))
             break;
-        }
-        else {
-            perror("incorrect signal\n");
-        }
     }
     
     //choose a game
-    std::cout << "Choose a game.(Enter game number)\n" << "1. Tic tac toe\n" << "2. Gobang\n";
-    while (true) {
-        std::cin >> game_type; // type of game
-        if (game_type > 0 && game_type < MAX_GAME_TYPE + 1) {
-            break;
-        }
-        else {
-            std::cout << "Invalid game number. Try again!\n";
-        }
-    }
+    game_type = get_game_type();
     
     //send game request to server
     send_signal = 2; //send game request signal
     send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
     send(client_socket_fd, &game_type, sizeof(game_type), 0); // send game number to server
-    std::cout << "Waiting for other players...\n";
+    show_waiting();
     
     recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
     if (recv_signal == 2) {
-        system("clear");
-        std::cout << "Game starts!\n";
+        show_game_start();
     }
     else {
-        perror("incorrect signal\n");
+        std::cerr << "Incorrect signal\nn";
+        exit(EXIT_FAILURE);
     }
     
     //enter game
-    if (game_type == 1) { //tic_tac_toe
-        while (true) {
-            recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
-            if (recv_signal == 3) { //your turn
-                std::cout << "Your turn!\n";
-                char* message;
-                message = new char[3];
-                std::cin >> message;
-                send_signal = 3; //send game move signal
-                send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
-                send(client_socket_fd, message, strlen(message), 0);
-                delete[] message;
-            }
-            else if (recv_signal == 4) { // opponent's turn
-                std::cout << "Opponent\'s turn!\n";
-            }
-            else if (recv_signal == 5) { //receive message about game
-                valread = recv(client_socket_fd, buffer, BUF_SIZE, 0);
-                buffer[valread] = '\0';
-                for (int i = 0; i < valread; i++) {
-                    std::cout << buffer[i];
+    switch (game_type) {
+        case TIC_TAC_TOE:
+            while (true) {
+                recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+                if (recv_signal == 3) { //your turn
+                    std::cout << "Your turn!\n";
+                    char* message;
+                    message = new char[3];
+                    std::cin >> message;
+                    send_signal = 3; //send game move signal
+                    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+                    send(client_socket_fd, message, strlen(message), 0);
+                    delete[] message;
+                }
+                else if (recv_signal == 4) { // opponent's turn
+                    std::cout << "Opponent\'s turn!\n";
+                }
+                else if (recv_signal == 5) { //receive message about game
+                    valread = recv(client_socket_fd, buffer, BUF_SIZE, 0);
+                    buffer[valread] = '\0';
+                    std::cout << buffer;
                 }
             }
-        }
+            break;
+        case GOBANG:
+            break;
     }
-    
     close(client_socket_fd);
 }

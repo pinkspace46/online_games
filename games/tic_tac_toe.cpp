@@ -23,13 +23,8 @@ char* tic_tac_toe::process_move(char* message)
     int c = message[1] - '0';
     board[6 * r + 2 * c] = message[2];
     strcpy(message, board);
-    active_player = (active_player + 1) % game_players; // change next active_player
+    active_player_index = (active_player_index + 1) % game_players; // change next active_player
     return message;
-}
-
-int tic_tac_toe::check_game()
-{
-    
 }
 
 char* tic_tac_toe::get_board()

@@ -1,4 +1,5 @@
 #include "lobby_manager.hpp"
+#include "../games/game_types.hpp"
 #include <unistd.h>
 #include <iostream>
 #include <sys/socket.h>
@@ -142,7 +143,7 @@ bool lobby_manager::join_game(int fd, int game_type) //return game ready to star
 
 game* lobby_manager::create_game(int fd, int game_type)
 {
-    if (game_type == 0){
+    if (game_type == TIC_TAC_TOE){
         tic_tac_toe* ttt = new tic_tac_toe();
         ttt->add_player(fd);
         fd_player_mapping[fd]->game_ptr = ttt;
@@ -156,7 +157,7 @@ game* lobby_manager::create_game(int fd, int game_type)
 void lobby_manager::send_next_turn(int fd)
 {
     for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
-        if (i == (fd_player_mapping[fd])->game_ptr->get_active_player()) {
+        if (i == (fd_player_mapping[fd])->game_ptr->get_active_player_index()) {
             send_signal = 3; //send signal to active player
         }
         else {
