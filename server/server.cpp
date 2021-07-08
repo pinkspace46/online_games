@@ -9,8 +9,8 @@
 #include <iostream>
 #include <assert.h>
 
-#include "../utils/doubly_linked_list.hpp"
-#include "lobby_manager.hpp"
+#include "utils/doubly_linked_list.hpp"
+#include "server/lobby_manager.hpp"
 
 #define PORT 12345
 #define MAX_PENDING_CONNS 50

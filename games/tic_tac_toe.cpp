@@ -1,4 +1,4 @@
-#include "tic_tac_toe.hpp"
+#include "games/tic_tac_toe.hpp"
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>

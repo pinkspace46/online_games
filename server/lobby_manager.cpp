@@ -1,10 +1,12 @@
-#include "lobby_manager.hpp"
-#include "../games/game_types.hpp"
 #include <unistd.h>
 #include <iostream>
 #include <sys/socket.h>
 #include <string.h>
 #include <arpa/inet.h>
+
+#include "server/lobby_manager.hpp"
+#include "games/game_types.hpp"
+#include "signals.hpp"
 
 // usage of arpa/inet.h here should be removed afterwards,
 // we shouldn't be dealing with ip address and ports here,
@@ -12,8 +14,8 @@
 
 lobby_manager::lobby_manager()
 {
-    recv_signal = 0;
-    send_signal = 0;
+    recv_signal = EMPTY;
+    send_signal = EMPTY;
     for (int i = 0; i < BUF_SIZE; ++i) {
         buffer[i] = '\0';
     }
@@ -42,12 +44,12 @@ int lobby_manager::notify(int fd)
         case 0: // reserved
             return 0;
 
-        case 1: // receive player name signal
+        case PLAYER_NAME: // receive player name signal
             valread = recv(fd, buffer, BUF_SIZE, 0); // receive player name
             buffer[valread] = '\0';
             std::cout << "Received player name: " << buffer << std::endl;
             if (repeat_name(buffer)) {
-                send_signal = 0; // repeated name signal (fail)
+                send_signal = PLAYER_NAME_FAIL; // repeated name signal (fail)
                 if (send(fd, &send_signal, sizeof(send_signal), 0) != sizeof(send_signal)) {
                     perror("send");
                 }
@@ -61,21 +63,21 @@ int lobby_manager::notify(int fd)
                 }
                 (new_player->name)[valread] = '\0';
                 fd_player_mapping[fd] = new_player;
-                send_signal = 1; // no repeated name signal (success)
+                send_signal = PLAYER_NAME_SUCC; // no repeated name signal (success)
                 if (send(fd, &send_signal, sizeof(send_signal), 0) != sizeof(send_signal)) {
                     perror("send");
                 }
             }
             break;
 
-        case 2: // receive game request signal
+        case GAME_REQUEST: // receive game request signal
             int game_type;
             valread = recv(fd, &game_type, sizeof(game_type), 0); // receive game_type
             game_type -= 1; // make game_type start from 0
             bool ready;
             ready = join_game(fd, game_type);
             if (ready) {
-                send_signal = 2; // game start signal
+                send_signal = GAME_START; // game start signal
                 for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
                     send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
                 }
@@ -83,12 +85,12 @@ int lobby_manager::notify(int fd)
             }
             break;
             
-        case 3: // receive game move signal
+        case GAME_MOVE: // receive game move signal
             char* message;
             message = new char[1000];
             recv(fd, message, 1000, 0);
             message = (fd_player_mapping[fd])->game_ptr->process_move(message);
-            send_signal = 5; //game message signal
+            send_signal = GAME_STATE; //game message signal
             for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
                 send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
                 send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], message, strlen(message), 0);
@@ -158,10 +160,10 @@ void lobby_manager::send_next_turn(int fd)
 {
     for (int i = 0; i < (fd_player_mapping[fd])->game_ptr->get_current_player_count(); ++i) {
         if (i == (fd_player_mapping[fd])->game_ptr->get_active_player_index()) {
-            send_signal = 3; //send signal to active player
+            send_signal = ACTIVE_PLAYER; //send signal to active player
         }
         else {
-            send_signal = 4; //send signal to non-active players
+            send_signal = NON_ACTIVE_PLAYER; //send signal to non-active players
         }
         send(((fd_player_mapping[fd])->game_ptr->get_player_fd())[i], &send_signal, sizeof(send_signal), 0);
     }

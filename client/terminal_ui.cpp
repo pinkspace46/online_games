@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string.h>
 #include <map>
-#include "../games/game_types.hpp"
+#include "games/game_types.hpp"
 
 std::map<int, std::string> game_types = {{TIC_TAC_TOE, "tic tac toe"}, {GOBANG, "gobang"}};
 void get_player_name(char* buf, int size)

@@ -1,7 +1,7 @@
 #ifndef TIC_TAC_TOE_H
 #define TIC_TAC_TOE_H
 
-#include "games/game.hpp"
+#include "game.hpp"
 
 class tic_tac_toe: public game {
     private:

@@ -1,4 +1,4 @@
-#include "game.hpp"
+#include "games/game.hpp"
 
 game::game(int player_count)
 {
