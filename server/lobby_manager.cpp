@@ -41,9 +41,6 @@ int lobby_manager::notify(int fd)
                                     << ntohs(address.sin_port) << std::endl;
     
     switch (recv_signal) {
-        case 0: // reserved
-            return 0;
-
         case PLAYER_NAME: // receive player name signal
             valread = recv(fd, buffer, BUF_SIZE, 0); // receive player name
             buffer[valread] = '\0';
@@ -145,14 +142,20 @@ bool lobby_manager::join_game(int fd, int game_type) //return game ready to star
 
 game* lobby_manager::create_game(int fd, int game_type)
 {
-    if (game_type == TIC_TAC_TOE){
-        tic_tac_toe* ttt = new tic_tac_toe();
-        ttt->add_player(fd);
-        fd_player_mapping[fd]->game_ptr = ttt;
-        return ttt;
-    }
-    else {
-        return NULL;
+    switch (game_type) {
+        case TIC_TAC_TOE: {
+            tic_tac_toe* ttt = new tic_tac_toe();
+            ttt->add_player(fd);
+            fd_player_mapping[fd]->game_ptr = ttt;
+            return ttt;
+            break;
+        }
+        case GOBANG:
+            return NULL;
+            break;
+        default:
+            return NULL;
+            break;
     }
 }
 

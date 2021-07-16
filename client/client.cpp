@@ -139,6 +139,8 @@ int main(int argc, char *argv[])
             break;
         case GOBANG:
             break;
+        default:
+            break;
     }
     close(client_socket_fd);
 }
