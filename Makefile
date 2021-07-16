@@ -2,10 +2,6 @@ FLAGS = -Iinclude
 
 all : build/client build/server
 
-test :
-	echo $(SERVER_SRC)
-	echo $(CLIENT_SRC)
-
 clean : 
 	rm -rf build
 
