@@ -11,6 +11,7 @@
 
 #include "utils/doubly_linked_list.hpp"
 #include "server/lobby_manager.hpp"
+#include "send_recv.hpp"
 
 #define PORT 12345
 #define MAX_PENDING_CONNS 50
@@ -96,9 +97,7 @@ int main(int argc, char *argv[])
             std::cout << "New connection, socket fd: " << new_client_socket_fd << ", ip: " << inet_ntoa(address.sin_addr) 
                       << ", port: " << ntohs(address.sin_port) << std::endl;
 
-            if (send(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0) != strlen(welcome_msg)) {
-                perror("send");
-            }
+            SEND(new_client_socket_fd, welcome_msg, strlen(welcome_msg), 0);
             std::cout << "Welcome message sent" << std::endl;
             
             // add new fd to fd list

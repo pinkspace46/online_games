@@ -10,6 +10,7 @@
 
 #include "games/game_types.hpp"
 #include "signals.hpp"
+#include "send_recv.hpp"
 
 #define BUF_SIZE 1024
 #define PORT 12345
@@ -27,15 +28,12 @@ int send_name(int client_socket_fd, char* buf)
 {
     int send_signal, recv_signal;
     send_signal = PLAYER_NAME; // send player name signal
-    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+    SEND(client_socket_fd, &send_signal, sizeof(send_signal), 0);
     
-    if (send(client_socket_fd, buf, strlen(buf), 0) != strlen(buf)) {
-        perror("send player name");
-        exit(EXIT_FAILURE);
-    }
+    SEND(client_socket_fd, buf, strlen(buf), 0);
     std::cerr << "Player name sent.\n";
 
-    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0); //receive signal of whether name repeated
+    RECV(client_socket_fd, &recv_signal, sizeof(recv_signal), 0); //receive signal of whether name repeated
     
     if (recv_signal == PLAYER_NAME_FAIL) {
         show_name_used();
@@ -81,7 +79,7 @@ int main(int argc, char *argv[])
     
     int valread;
     // receive welcome message
-    valread = recv(client_socket_fd, &buffer, BUF_SIZE, 0);
+    valread = RECV(client_socket_fd, &buffer, BUF_SIZE, 0);
     buffer[valread] = '\0';
     for (int i = 0; i < valread; i++) {
         std::cout << buffer[i];
@@ -99,11 +97,11 @@ int main(int argc, char *argv[])
     
     //send game request to server
     send_signal = GAME_REQUEST; //send game request signal
-    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
-    send(client_socket_fd, &game_type, sizeof(game_type), 0); // send game number to server
+    SEND(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+    SEND(client_socket_fd, &game_type, sizeof(game_type), 0); // send game number to server
     show_waiting();
     
-    recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+    RECV(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
     if (recv_signal == GAME_START) {
         show_game_start();
     }
@@ -123,15 +121,15 @@ int main(int argc, char *argv[])
                     message = new char[3];
                     std::cin >> message;
                     send_signal = GAME_MOVE; //send game move signal
-                    send(client_socket_fd, &send_signal, sizeof(send_signal), 0);
-                    send(client_socket_fd, message, strlen(message), 0);
+                    SEND(client_socket_fd, &send_signal, sizeof(send_signal), 0);
+                    SEND(client_socket_fd, message, strlen(message), 0);
                     delete[] message;
                 }
                 else if (recv_signal == NON_ACTIVE_PLAYER) { // opponent's turn
                     std::cout << "Opponent\'s turn!\n";
                 }
                 else if (recv_signal == GAME_STATE) { //receive message about game
-                    valread = recv(client_socket_fd, buffer, BUF_SIZE, 0);
+                    valread = RECV(client_socket_fd, buffer, BUF_SIZE, 0);
                     buffer[valread] = '\0';
                     std::cout << buffer;
                 }
