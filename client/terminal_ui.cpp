@@ -13,8 +13,8 @@ void get_player_name(char* buf, int size)
             std::cout << "Player name should be less than 20 characters.\n";
             continue;
         }
+        return;
     }
-    return;
 }
 
 void show_name_used()
@@ -39,7 +39,7 @@ int get_game_type()
     int game_type;
     while (true) {
         std::cin >> game_type; // type of game
-        if (game_type > 0 && game_type < game_types.size() + 1) {
+        if (game_type >= 0 && game_type < game_types.size()) {
             break;
         }
         else {
