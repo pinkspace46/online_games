@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     switch (game_type) {
         case TIC_TAC_TOE:
             while (true) {
-                recv(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
+                RECV(client_socket_fd, &recv_signal, sizeof(recv_signal), 0);
                 if (recv_signal == ACTIVE_PLAYER) { //your turn
                     std::cout << "Your turn!\n";
                     char* message;
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
                 }
             }
             break;
-        case GOBANG:
+        case GOMOKU:
             break;
         default:
             break;

@@ -67,7 +67,6 @@ int lobby_manager::notify(int fd)
         case GAME_REQUEST: // receive game request signal
             int game_type;
             valread = RECV(fd, &game_type, sizeof(game_type), 0); // receive game_type
-            game_type -= 1; // make game_type start from 0
             bool ready;
             ready = join_game(fd, game_type);
             if (ready) {
@@ -125,6 +124,7 @@ bool lobby_manager::join_game(int fd, int game_type) //return game ready to star
     if (waiting_game[game_type] == NULL) {
         game* new_game_ptr = create_game(fd, game_type);
         waiting_game[game_type] = new_game_ptr;
+        fd_player_mapping[fd]->game_ptr = waiting_game[game_type];
         return false;
     }
     else {
@@ -147,9 +147,11 @@ game* lobby_manager::create_game(int fd, int game_type)
             return ttt;
             break;
         }
-        case GOBANG:
+        case GOMOKU: {
+            
             return NULL;
             break;
+        }
         default:
             return NULL;
             break;

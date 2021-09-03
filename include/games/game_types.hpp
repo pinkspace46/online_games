@@ -5,6 +5,6 @@
 #include <string>
 
 #define TIC_TAC_TOE 0
-#define GOBANG      1
+#define GOMOKU      1
 
 #endif /* GAME_TYPES_H */

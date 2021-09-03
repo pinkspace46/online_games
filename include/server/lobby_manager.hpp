@@ -4,6 +4,7 @@
 #include <map>
 #include "../games/game.hpp"
 #include "../games/tic_tac_toe.hpp"
+#include "../games/gomoku.hpp"
 
 #define BUF_SIZE 1024
 #define GAME_TYPES 2

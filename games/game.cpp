@@ -2,7 +2,7 @@
 
 game::game(int player_count)
 {
-    player_fd = new int[player_count];
+    player_fd = new int[player_count]; //delete?
     game_players = player_count;
     current_players = 0;
     active_player_index = 0;

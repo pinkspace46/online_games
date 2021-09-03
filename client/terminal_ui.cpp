@@ -3,7 +3,8 @@
 #include <map>
 #include "games/game_types.hpp"
 
-std::map<int, std::string> game_types = {{TIC_TAC_TOE, "tic tac toe"}, {GOBANG, "gobang"}};
+std::map<int, std::string> game_types = {{TIC_TAC_TOE, "tic tac toe"}, {GOMOKU, "gomoku"}};
+
 void get_player_name(char* buf, int size)
 {
     while(true) {
